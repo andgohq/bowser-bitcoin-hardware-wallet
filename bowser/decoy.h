@@ -8,9 +8,9 @@ const int Length = 12;
 const int Width  = 10;     
 const int Height = 20;    
 int screen[Width][Height] = {0}; 
-struct Point {int X, Y;};
-struct Block {Point square[4][4]; int numRotate, color;};
-Point pos; Block block;
+struct Point_ {int X, Y;};
+struct Block {Point_ square[4][4]; int numRotate, color;};
+Point_ pos; Block block;
 int rot, fall_cnt = 0;
 bool started = false, gameover = false;
 boolean but_A = false, but_LEFT = false, but_RIGHT = false;
@@ -53,10 +53,10 @@ void PutStartPos() {
 }
 //========================================================================
 
-bool GetSquares(Block block, Point pos, int rot, Point* squares) {
+bool GetSquares(Block block, Point_ pos, int rot, Point_* squares) {
   bool overlap = false;
   for (int i = 0; i < 4; ++i) {
-    Point p;
+    Point_ p;
     p.X = pos.X + block.square[rot][i].X;
     p.Y = pos.Y + block.square[rot][i].Y;
     overlap |= p.X < 0 || p.X >= Width || p.Y < 0 || p.Y >= 
@@ -81,7 +81,7 @@ bool KeyPadLoop(){
   return false;
 }
 //========================================================================
-void GetNextPosRot(Point* pnext_pos, int* pnext_rot) {
+void GetNextPosRot(Point_* pnext_pos, int* pnext_rot) {
   bool received = KeyPadLoop();
   if (but_A) started = true;
   if (!started) return;
@@ -106,9 +106,9 @@ void DeleteLine() {
   }
 }
 //========================================================================
-void ReviseScreen(Point next_pos, int next_rot) {
+void ReviseScreen(Point_ next_pos, int next_rot) {
   if (!started) return;
-  Point next_squares[4];
+  Point_ next_squares[4];
   for (int i = 0; i < 4; ++i) screen[pos.X + 
     block.square[rot][i].X][pos.Y + block.square[rot][i].Y] = 0;
   if (GetSquares(block, next_pos, next_rot, next_squares)) {
@@ -137,7 +137,7 @@ void ReviseScreen(Point next_pos, int next_rot) {
 
 void decoyRun(){
       if (gameover) return;
-      Point next_pos;
+      Point_ next_pos;
       int next_rot = rot;
       GetNextPosRot(&next_pos, &next_rot);
       ReviseScreen(next_pos, next_rot);

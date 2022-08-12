@@ -1,4 +1,4 @@
-#include <M5Stack.h>
+#include <M5Core2.h>
 #include <EEPROM.h>
 #include <Electrum.h>
 
