@@ -931,9 +931,10 @@ void loopToReset()
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setCursor(0, 20);
   M5.Lcd.setTextSize(2);
-  M5.Lcd.setTextColor(RED);
+  M5.Lcd.setTextColor(GREEN);
   M5.Lcd.println("");
   M5.Lcd.setCursor(0, 90);
-  M5.Lcd.println("Push reset button to restart");
+  M5.Lcd.println("  Push reset button");
+  M5.Lcd.println("  to restart");
   while(1);
 }
