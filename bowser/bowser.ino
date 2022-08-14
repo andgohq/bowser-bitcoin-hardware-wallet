@@ -609,25 +609,26 @@ void seedMaker()
     }
     buttonA = false;
   }
-  M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setCursor(0, 100);
-  M5.Lcd.println("   Words will also");
-  M5.Lcd.println("   be saved to SD");
+  // M5.Lcd.fillScreen(BLACK);
+  // M5.Lcd.setCursor(0, 100);
+  // M5.Lcd.println("   Words will also");
+  // M5.Lcd.println("   be saved to SD");
 
   File file = SPIFFS.open("/key.txt", FILE_WRITE);
   file.print(seedGenerateStr.substring(0, seedGenerateStr.length()) + "\n");
   file.close();
 
-  String seedGen = "Keep you seed phrase safe but dont lose them! \n" + seedGenerateStr + "\n To learn more about seed phrases visit https://en.bitcoin.it/wiki/Seed_phrase";
-  int str_len = seedGen.length() + 1;
-  char char_array[str_len];
-  seedGen.toCharArray(char_array, str_len);
+  // ANDGO: The generated seed is not saved SD card for safety reason.
+  // String seedGen = "Keep you seed phrase safe but dont lose them! \n" + seedGenerateStr + "\n To learn more about seed phrases visit https://en.bitcoin.it/wiki/Seed_phrase";
+  // int str_len = seedGen.length() + 1;
+  // char char_array[str_len];
+  // seedGen.toCharArray(char_array, str_len);
 
   File otherFile = SPIFFS.open("/key.txt");
   savedSeed = otherFile.readStringUntil('\n');
   otherFile.close();
 
-  writeFile(SD, "/bowser.txt", char_array);
+  // writeFile(SD, "/bowser.txt", char_array);
 
   delay(6000);
 }
