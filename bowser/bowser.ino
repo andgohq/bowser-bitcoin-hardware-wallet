@@ -86,14 +86,6 @@ void setup(void)
   // ANDGO: Check if SD card has a coomand
   if (sdCommand == "HARD RESET")
   {
-    M5.Lcd.fillScreen(BLACK);
-    M5.Lcd.setCursor(0, 20);
-    M5.Lcd.setTextSize(3);
-    M5.Lcd.setTextColor(RED);
-    M5.Lcd.println("");
-    M5.Lcd.setCursor(0, 90);
-    M5.Lcd.println("    PROCESSING");
-    delay(1000);
     wipeDevice();
     loopToReset();
   }
@@ -161,6 +153,11 @@ void loop()
       M5.Lcd.println("Show Seed");
       M5.Lcd.setTextColor(GREEN);
     }
+
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.setCursor(0, 220);
+    M5.Lcd.println("    up      down    select");
+
     while (buttonA == false)
     {
       if (M5.BtnA.wasReleased())
@@ -563,7 +560,7 @@ void seedMaker()
   M5.Lcd.setTextSize(2);
   M5.Lcd.println("   Write seed words");
   M5.Lcd.println("   somewhere safe!");
-  delay(6000);
+  waitOK();
   buttonA = false;
 
   byte arr[32];
@@ -603,7 +600,7 @@ void seedMaker()
   M5.Lcd.setTextSize(2);
   M5.Lcd.println("   Time to check");
   M5.Lcd.println("   the words!");
-  delay(6000);
+  waitOK();
   for (int z = 0; z < 24; z++)
   {
     M5.Lcd.fillScreen(BLACK);
@@ -947,4 +944,21 @@ void loopToReset()
   M5.Lcd.println("  Push reset button");
   M5.Lcd.println("  to restart");
   while(1);
+}
+
+void waitOK()
+{
+  M5.Lcd.setTextColor(GREEN);
+  M5.Lcd.setCursor(0, 220);
+  M5.Lcd.println("                      OK  ");
+
+  while (buttonC == false)
+  {
+    if (M5.BtnC.wasReleased())
+    {
+      buttonC = true;
+    }
+    M5.update();
+  }
+  delay(100);
 }
