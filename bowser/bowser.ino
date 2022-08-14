@@ -376,10 +376,7 @@ void signPSBT()
     M5.Lcd.setTextSize(2);
     M5.Lcd.setTextColor(RED);
     M5.Lcd.println("    No SD Available");
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("                   go back");
+    delay(3000);
   }
   else
   {
@@ -451,10 +448,7 @@ void exportMaster()
     M5.Lcd.setTextSize(2);
     M5.Lcd.setTextColor(RED);
     M5.Lcd.println("    No SD Available");
-    M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("                   go back");
+    delay(3000);
   }
 }
 
