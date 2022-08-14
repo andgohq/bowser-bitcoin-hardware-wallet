@@ -282,7 +282,7 @@ void signPSBT()
   if (sdCommand.substring(0, 4) == "SIGN")
   {
     String eltx = sdCommand.substring(5, sdCommand.length() + 1);
-    ElectrumTx tx;
+    PSBT tx;
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setCursor(0, 20);
     M5.Lcd.setTextSize(3);
@@ -298,12 +298,13 @@ void signPSBT()
     M5.Lcd.setCursor(0, 20);
     M5.Lcd.setTextSize(2);
 
-    int len_parsed = tx.parse(eltx);
-    if (len_parsed == 0)
-    {
-      M5.Lcd.println("Can't parse tx");
-      return;
-    }
+    tx.parseBase64(eltx);
+    // int len_parsed = tx.parse(eltx);
+    // if (len_parsed == 0)
+    // {
+    //   M5.Lcd.println("Can't parse tx");
+    //   return;
+    // }
     for (int i = 0; i < tx.tx.outputsNumber; i++)
     {
       M5.Lcd.print(tx.tx.txOuts[i].address());
@@ -719,7 +720,7 @@ void enterPin(bool set)
     }
     if (M5.BtnC.wasReleased())
     {
-
+      longVibration();
       if (set == true)
       {
         uint8_t newPassKeyResult[32];
