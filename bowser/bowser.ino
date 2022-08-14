@@ -66,27 +66,6 @@ void setup(void)
 
   M5.Lcd.fillScreen(BLACK);
 
-  // ANDGO: Read file key.txt from SPIFFS (SPI Flash File System) 
-  if (!SPIFFS.begin(true))
-  {
-    return;
-  }
-  File otherFile = SPIFFS.open("/key.txt");
-  savedSeed = otherFile.readStringUntil('\n');
-  otherFile.close();
-
-  if (savedSeed.length() < 30)
-    {
-    M5.Lcd.fillScreen(BLACK);
-    M5.Lcd.setCursor(0, 100);
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setTextColor(RED);
-    M5.Lcd.println("No wallet found on device");
-    delay(1000);
-    wipeDevice();
-    loopToReset();
-  }
-
   // ANDGO: Check if SD card has a coomand
   if (sdCommand == "HARD RESET")
   {
@@ -102,6 +81,46 @@ void setup(void)
     restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
     pinMaker();
     writeFile(SD, "/bowser.txt", "");
+    loopToReset();
+  }
+
+  // ANDGO: Read file key.txt from SPIFFS (SPI Flash File System) 
+  if (!SPIFFS.begin(true))
+  {
+    return;
+  }
+
+
+  File otherFile = SPIFFS.open("/key.txt");
+  savedSeed = otherFile.readStringUntil('\n');
+  otherFile.close();
+  
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.println("savedSeed:");
+  M5.Lcd.println(savedSeed);
+
+  otherFile = SPIFFS.open("/pass.txt");
+  String pass = otherFile.readStringUntil('\n');
+  otherFile.close();
+
+  M5.Lcd.setCursor(0, 100);
+
+  M5.Lcd.println("pass");
+  M5.Lcd.println(pass);
+
+
+  if (savedSeed.length() < 30)
+    {
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(0, 100);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(RED);
+    M5.Lcd.println("No wallet found on device");
+    M5.Lcd.println(savedSeed);
+
+    delay(1000);
+    wipeDevice();
     loopToReset();
   }
 
@@ -801,7 +820,6 @@ void enterPin(bool set)
 
 void restoreFromSeed(String theSeed)
 {
-
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setCursor(0, 20);
   M5.Lcd.setTextSize(3);
@@ -845,10 +863,17 @@ void restoreFromSeed(String theSeed)
     File otherFile = SPIFFS.open("/key.txt");
     savedSeed = otherFile.readStringUntil('\n');
     otherFile.close();
+
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.println(theSeed);
+    waitOK();
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.println(savedSeed);
+    waitOK();
+
   } else {
     loopToReset();
   }
-
   buttonA = false;
   buttonC = false;
 }
