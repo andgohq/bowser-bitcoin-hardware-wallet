@@ -84,6 +84,24 @@ void setup(void)
 
   M5.Lcd.fillScreen(BLACK);
 
+  // ANDGO: Check if SD card has a coomand
+  if (sdCommand == "HARD RESET")
+  {
+    wipeDevice();
+    pinMaker();
+    writeFile(SD, "/bowser.txt", "");
+    loopToReset();
+  }
+
+  if (sdCommand.substring(0, 7) == "RESTORE")
+  {
+    wipeSpiffs();
+    restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
+    pinMaker();
+    writeFile(SD, "/bowser.txt", "");
+    loopToReset();
+  }
+
   // ANDGO: Read file key.txt from SPIFFS (SPI Flash File System) 
   if (!SPIFFS.begin(true))
   {
