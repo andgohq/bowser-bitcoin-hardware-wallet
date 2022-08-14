@@ -42,76 +42,59 @@ void setup(void)
   delay(200);
   M5.Lcd.setBrightness(50);
   M5.Lcd.fillScreen(BLACK);
+
+  // ANDGO: Run Tetris for decoy :P
   decoySetup();
+
+  // ANDGO: Read file key.txt from SPIFFS (SPI Flash File System) 
   if (!SPIFFS.begin(true))
   {
     return;
   }
-  //Checks if the user has an account or is forcing a reset
-  // ANDGO: Read file key.txt from SPIFFS (SPI Flash File System) 
   File otherFile = SPIFFS.open("/key.txt");
   savedSeed = otherFile.readStringUntil('\n');
   otherFile.close();
-  bool sdSwitch = false;
 
-  // ANDGO: Check if valid seed is written in SPIFFS file key.txt or SD Card is inserted
-  while (!sdSwitch) {
-    sdChecker();
-    if (savedSeed.length() < 30)
-     {
-      M5.Lcd.fillScreen(BLACK);
-      M5.Lcd.setCursor(0, 100);
-      M5.Lcd.setTextSize(2);
-      M5.Lcd.setTextColor(RED);
-      M5.Lcd.println(" ERROR: No wallet found on device");
-     }
-    else if (!sdAvailable)
-     {
-      M5.Lcd.fillScreen(BLACK);
-      M5.Lcd.setCursor(0, 100);
-      M5.Lcd.setTextSize(2);
-      M5.Lcd.setTextColor(RED);
-      M5.Lcd.println(" ERROR: No SD available");
-     }
-    else{
-       sdSwitch = true;
-   }
-   Serial.println(sdCommand);
-   delay(3000);
-  }
-  if (sdCommand == "HARD RESET")
-  {
-    M5.Lcd.fillScreen(BLACK);
-    M5.Lcd.setCursor(0, 20);
-    M5.Lcd.setTextSize(3);
-    M5.Lcd.setTextColor(RED);
-    M5.Lcd.println("");
-    M5.Lcd.setCursor(0, 90);
-    M5.Lcd.println("    PROCESSING");
-    delay(1000);
-    wipeSpiffs();
-    seedMaker();
-    pinMaker();
-  }
-  else if (sdCommand.substring(0, 7) == "RESTORE")
-  {
-    wipeSpiffs();
-    restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
-    pinMaker();
-  }
-  else if (savedSeed.length() > 30)
-  {
-    enterPin(false);
-  }
-  else
-  {
+  if (savedSeed.length() < 30)
+    {
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setCursor(0, 100);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setTextColor(RED);
-    M5.Lcd.println("ERROR: 'HARD RESET' device");
-    delay(999999999);
+    M5.Lcd.println("No wallet found on device");
+    delay(1000);
+    wipeDevice();
+    loopToReset();
   }
+
+  // ANDGO: Check if SD card is inserted and has coomand
+  sdChecker();
+  if (sdAvailable)
+  {
+    Serial.println(sdCommand);
+    if (sdCommand == "HARD RESET")
+    {
+      M5.Lcd.fillScreen(BLACK);
+      M5.Lcd.setCursor(0, 20);
+      M5.Lcd.setTextSize(3);
+      M5.Lcd.setTextColor(RED);
+      M5.Lcd.println("");
+      M5.Lcd.setCursor(0, 90);
+      M5.Lcd.println("    PROCESSING");
+      delay(1000);
+      wipeDevice();
+      loopToReset();
+    }
+    else if (sdCommand.substring(0, 7) == "RESTORE")
+    {
+      wipeSpiffs();
+      restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
+      pinMaker();
+      loopToReset();
+    }
+  }
+
+  enterPin(false);
   M5.Lcd.drawBitmap(0, 0, 320, 240, (uint8_t *)WalletImg_map);
   delay(3000);
 }
@@ -138,7 +121,6 @@ void loop()
       M5.Lcd.println("Sign Transaction");
       M5.Lcd.println("Export ZPUB");
       M5.Lcd.println("Show Seed");
-      M5.Lcd.println("Wipe Device");
     }
     else if (menuItem == 2)
     {
@@ -148,7 +130,6 @@ void loop()
       M5.Lcd.setTextColor(GREEN);
       M5.Lcd.println("Export ZPUB");
       M5.Lcd.println("Show Seed");
-      M5.Lcd.println("Wipe Device");
     }
     else if (menuItem == 3)
     {
@@ -158,7 +139,6 @@ void loop()
       M5.Lcd.println("Export ZPUB");
       M5.Lcd.setTextColor(GREEN);
       M5.Lcd.println("Show Seed");
-      M5.Lcd.println("Wipe Device");
     }
     else if (menuItem == 4)
     {
@@ -167,17 +147,6 @@ void loop()
       M5.Lcd.println("Export ZPUB");
       M5.Lcd.setTextColor(BLUE);
       M5.Lcd.println("Show Seed");
-      M5.Lcd.setTextColor(GREEN);
-      M5.Lcd.println("Wipe Device");
-    }
-    else if (menuItem == 5)
-    {
-      M5.Lcd.println("Display Address");
-      M5.Lcd.println("Sign Transaction");
-      M5.Lcd.println("Export ZPUB");
-      M5.Lcd.println("Show Seed");
-      M5.Lcd.setTextColor(BLUE);
-      M5.Lcd.println("Wipe Device");
       M5.Lcd.setTextColor(GREEN);
     }
     while (buttonA == false)
@@ -202,9 +171,9 @@ void loop()
     buttonA = false;
     if (menuItem < 1)
     {
-      menuItem = 5;
+      menuItem = 4;
     }
-    else if (menuItem > 5)
+    else if (menuItem > 4)
     {
       menuItem = 1;
     }
@@ -225,10 +194,6 @@ void loop()
   else if (menuItem == 4) // ANDGO: Show Seed
   {
     showSeed();
-  }
-  else if (menuItem == 5) // ANDGO: Wipe Device
-  {
-    wipeDevice();
   }
 }
 
@@ -561,7 +526,7 @@ void seedChecker()
     M5.Lcd.println("   Error: Reset device");
     M5.Lcd.println("   or restore from seed");
     M5.Lcd.println("   (See documentation)");
-    delay(99999999999999999999999);
+    while(1);
   }
   else
   {
@@ -955,4 +920,19 @@ void writeIntIntoEEPROM(int addresss, int number)
 int readIntFromEEPROM(int addresss)
 {
   return EEPROM.read(addresss);
+}
+
+
+//========================================================================
+
+void loopToReset()
+{
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setCursor(0, 20);
+  M5.Lcd.setTextSize(3);
+  M5.Lcd.setTextColor(RED);
+  M5.Lcd.println("");
+  M5.Lcd.setCursor(0, 90);
+  M5.Lcd.println("Push reset button to restart");
+  while(1);
 }
