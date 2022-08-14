@@ -48,10 +48,13 @@ void setup(void)
     return;
   }
   //Checks if the user has an account or is forcing a reset
+  // ANDGO: Read file key.txt from SPIFFS (SPI Flash File System) 
   File otherFile = SPIFFS.open("/key.txt");
   savedSeed = otherFile.readStringUntil('\n');
   otherFile.close();
   bool sdSwitch = false;
+
+  // ANDGO: Check if valid seed is written in SPIFFS file key.txt or SD Card is inserted
   while (!sdSwitch) {
     sdChecker();
     if (savedSeed.length() < 30)
@@ -61,7 +64,6 @@ void setup(void)
       M5.Lcd.setTextSize(2);
       M5.Lcd.setTextColor(RED);
       M5.Lcd.println(" ERROR: No wallet found on device");
-      
      }
     else if (!sdAvailable)
      {
@@ -208,23 +210,23 @@ void loop()
     }
   }
 
-  if (menuItem == 1)
+  if (menuItem == 1) // ANDGO: Display Address
   {
     displayAddress();
   }
-  else if (menuItem == 2)
+  else if (menuItem == 2) // ANDGO: Sign Transaction
   {
     signPSBT();
   }
-  else if (menuItem == 3)
+  else if (menuItem == 3) // ANDGO: EPort ZPUB
   {
     exportMaster();
   }
-  else if (menuItem == 4)
+  else if (menuItem == 4) // ANDGO: Show Seed
   {
     showSeed();
   }
-  else if (menuItem == 5)
+  else if (menuItem == 5) // ANDGO: Wipe Device
   {
     wipeDevice();
   }
