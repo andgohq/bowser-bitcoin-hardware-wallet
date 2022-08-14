@@ -61,6 +61,24 @@ void setup(void)
 
   }
 
+  // ANDGO: Check if SD card has a coomand
+  if (sdCommand == "HARD RESET")
+  {
+    wipeDevice();
+    pinMaker();
+    writeFile(SD, "/bowser.txt", "");
+    loopToReset();
+  }
+
+  if (sdCommand.substring(0, 7) == "RESTORE")
+  {
+    wipeSpiffs();
+    restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
+    pinMaker();
+    writeFile(SD, "/bowser.txt", "");
+    loopToReset();
+  }
+
   // ANDGO: Run Tetris for decoy :P
   // decoySetup();
 
@@ -87,23 +105,6 @@ void setup(void)
     loopToReset();
   }
 
-  // ANDGO: Check if SD card has a coomand
-  if (sdCommand == "HARD RESET")
-  {
-    wipeDevice();
-    pinMaker();
-    writeFile(SD, "/bowser.txt", "");
-    loopToReset();
-  }
-
-  if (sdCommand.substring(0, 7) == "RESTORE")
-  {
-    wipeSpiffs();
-    restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
-    pinMaker();
-    writeFile(SD, "/bowser.txt", "");
-    loopToReset();
-  }
 
   enterPin(false);
   M5.Lcd.drawBitmap(0, 0, 320, 240, (uint8_t *)WalletImg_map);
