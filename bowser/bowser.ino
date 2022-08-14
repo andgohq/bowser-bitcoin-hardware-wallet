@@ -1,6 +1,7 @@
 #include <M5Core2.h>
 #include <EEPROM.h>
 #include <Electrum.h>
+#include <AXP192.h>
 
 #include "gameimg.c"
 #include "walletimg.c"
@@ -30,6 +31,9 @@ String hashed;
 String savedPinHash;
 String privateKey;
 String pubKey;
+
+AXP192 power;
+
 
 char ref[2][36][7] = {
     {"10", "0111", "0101", "011", "1", "1101", "001", "1111", "11", "1000", "010", "1011", "00", "01", "000", "1001", "0010", "101", "111", "0", "110", "1110", "100", "0110", "0100", "0011", "10000", "11000", "11100", "11110", "11111", "01111", "00111", "00011", "00001", "00000"},
@@ -87,6 +91,8 @@ void setup(void)
   if (sdCommand == "HARD RESET")
   {
     wipeDevice();
+    pinMaker();
+    writeFile(SD, "/bowser.txt", "");
     loopToReset();
   }
 
@@ -95,6 +101,7 @@ void setup(void)
     wipeSpiffs();
     restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
     pinMaker();
+    writeFile(SD, "/bowser.txt", "");
     loopToReset();
   }
 
@@ -164,16 +171,19 @@ void loop()
       {
         menuItem--;
         buttonA = true;
+        shortVibration();
       }
       else if (M5.BtnB.wasReleased())
       {
         menuItem++;
         buttonA = true;
+        shortVibration();
       }
       else if (M5.BtnC.wasReleased())
       {
         loopMenu = false;
         buttonA = true;
+        longVibration();
       }
       M5.update();
     }
@@ -248,13 +258,14 @@ void displayAddress()
   }
   M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setCursor(0, 220);
-  M5.Lcd.println("                   to menu");
+  M5.Lcd.println("                   go back");
 
   while (buttonC == false)
   {
     if (M5.BtnC.wasReleased())
     {
       buttonC = true;
+      shortVibration();
     }
     M5.update();
   }
@@ -310,10 +321,12 @@ void signPSBT()
       if (M5.BtnA.wasReleased())
       {
         buttonA = true;
+        longVibration();
       }
       if (M5.BtnC.wasReleased())
       {
         buttonC = true;
+        shortVibration();
       }
       M5.update();
     }
@@ -342,13 +355,14 @@ void signPSBT()
     M5.Lcd.setTextSize(2);
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("                   to menu");
+    M5.Lcd.println("                   go back");
 
     while (buttonC == false)
     {
       if (M5.BtnC.wasReleased())
       {
         buttonC = true;
+        shortVibration();
       }
       M5.update();
     }
@@ -365,7 +379,7 @@ void signPSBT()
     M5.Lcd.setTextSize(2);
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("                   to menu");
+    M5.Lcd.println("                   go back");
   }
   else
   {
@@ -377,12 +391,13 @@ void signPSBT()
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("                   to menu");
+    M5.Lcd.println("                   go back");
     while (buttonC == false)
     {
       if (M5.BtnC.wasReleased())
       {
         buttonC = true;
+        shortVibration();
       }
       M5.update();
     }
@@ -416,12 +431,13 @@ void exportMaster()
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("                   to menu");
+    M5.Lcd.println("                   go back");
     while (buttonC == false)
     {
       if (M5.BtnC.wasReleased())
       {
         buttonC = true;
+        shortVibration();
       }
       M5.update();
     }
@@ -438,7 +454,7 @@ void exportMaster()
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("                   to menu");
+    M5.Lcd.println("                   go back");
   }
 }
 
@@ -458,12 +474,13 @@ void showSeed()
   M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 220);
-  M5.Lcd.println("                   to menu");
+  M5.Lcd.println("                   go back");
   while (buttonC == false)
   {
     if (M5.BtnC.wasReleased())
     {
       buttonC = true;
+      shortVibration();
     }
     M5.update();
   }
@@ -487,6 +504,7 @@ void wipeDevice()
   M5.Lcd.println("");
   M5.Lcd.println("Insert SD card");
   M5.Lcd.println("   and press continue");
+  M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 220);
   M5.Lcd.println("continue            cancel");
@@ -496,10 +514,12 @@ void wipeDevice()
     if (M5.BtnA.wasReleased())
     {
       buttonA = true;
+      longVibration();
     }
     if (M5.BtnC.wasReleased())
     {
       buttonC = true;
+      shortVibration();
     }
     M5.update();
   }
@@ -507,7 +527,8 @@ void wipeDevice()
   {
     wipeSpiffs();
     seedMaker();
-    pinMaker();
+  } else {
+    loopToReset();
   }
 
   buttonA = false;
@@ -581,15 +602,16 @@ void seedMaker()
     M5.Lcd.setTextColor(BLUE);
     M5.Lcd.println("  " + getValue(seedGenerateStr, ' ', z));
     M5.Lcd.setTextSize(2);
-    M5.Lcd.println("");
     M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.println("   Press A for next");
+    M5.Lcd.setCursor(0, 220);
+    M5.Lcd.println("  next                  ");
 
     while (buttonA == false)
     {
       if (M5.BtnA.wasReleased())
       {
         buttonA = true;
+        shortVibration();
       }
       M5.update();
     }
@@ -612,15 +634,17 @@ void seedMaker()
     M5.Lcd.setTextColor(BLUE);
     M5.Lcd.println("  " + getValue(seedGenerateStr, ' ', z));
     M5.Lcd.setTextSize(2);
-    M5.Lcd.println("");
     M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.println("   Press A for next");
+    M5.Lcd.setCursor(0, 220);
+    M5.Lcd.println("  next                  ");
+
 
     while (buttonA == false)
     {
       if (M5.BtnA.wasReleased())
       {
         buttonA = true;
+        shortVibration();
       }
       M5.update();
     }
@@ -646,8 +670,6 @@ void seedMaker()
   otherFile.close();
 
   // writeFile(SD, "/bowser.txt", char_array);
-
-  delay(6000);
 }
 
 //========================================================================
@@ -660,7 +682,7 @@ void pinMaker()
   M5.Lcd.println("   Enter pin using");
   M5.Lcd.println("   use morse code,");
   M5.Lcd.println("   3 letters at least");
-  delay(6000);
+  waitOK();
   enterPin(true);
 }
 
@@ -676,10 +698,11 @@ void enterPin(bool set)
   M5.Lcd.setCursor(0, 10);
   M5.Lcd.setTextSize(3);
   M5.Lcd.print(" Morse Code pin");
-  M5.Lcd.setCursor(0, 200);
+  M5.Lcd.setCursor(0, 180);
   M5.Lcd.setTextSize(2);
-  M5.Lcd.println(" A dot, B dash, C submit");
   M5.Lcd.println(" pause between values");
+  M5.Lcd.println("");
+  M5.Lcd.println("    o      ----    submit");
 
   confirm = false;
   while (confirm == false)
@@ -687,12 +710,14 @@ void enterPin(bool set)
     if (M5.BtnA.wasReleased())
     {
       buttonA = true;
+      shortVibration();
       morseLetter = morseLetter + "1";
       timy = millis();
     }
     if (M5.BtnB.wasReleased())
     {
       buttonB = true;
+      longVibration();
       morseLetter = morseLetter + "0";
       timy = millis();
     }
@@ -762,10 +787,11 @@ void enterPin(bool set)
             {
               M5.Lcd.print("   " + passHide);
             }
-            M5.Lcd.setCursor(0, 200);
+            M5.Lcd.setCursor(0, 180);
             M5.Lcd.setTextSize(2);
-            M5.Lcd.println(" A dot, B dash, C submit");
             M5.Lcd.println(" pause between values");
+            M5.Lcd.println("");
+            M5.Lcd.println("    o      ----    submit");
           }
         }
         buttonA = false;
@@ -802,10 +828,12 @@ void restoreFromSeed(String theSeed)
     if (M5.BtnA.wasReleased())
     {
       buttonA = true;
+      longVibration();
     }
     if (M5.BtnC.wasReleased())
     {
       buttonC = true;
+      shortVibration();
     }
     M5.update();
   }
@@ -823,7 +851,8 @@ void restoreFromSeed(String theSeed)
     File otherFile = SPIFFS.open("/key.txt");
     savedSeed = otherFile.readStringUntil('\n');
     otherFile.close();
-    writeFile(SD, "/bowser.txt", "");
+  } else {
+    loopToReset();
   }
 
   buttonA = false;
@@ -957,8 +986,23 @@ void waitOK()
     if (M5.BtnC.wasReleased())
     {
       buttonC = true;
+      longVibration();
     }
     M5.update();
   }
+  buttonC = false;
+
   delay(100);
+}
+
+void shortVibration() {
+ power.SetLDOEnable(3, true);
+ delay(70);                   
+ power.SetLDOEnable(3, false); 
+}
+
+void longVibration() {
+ power.SetLDOEnable(3, true);
+ delay(400);                   
+ power.SetLDOEnable(3, false); 
 }
