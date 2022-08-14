@@ -39,12 +39,28 @@ char ref[2][36][7] = {
 void setup(void)
 {
   M5.begin();
-  delay(200);
   M5.Lcd.setBrightness(50);
   M5.Lcd.fillScreen(BLACK);
 
+  // ADNGO: Check SD card
+  sdChecker();
+  if (!sdAvailable){
+    M5.Lcd.setCursor(0, 20);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.println("");
+    M5.Lcd.setCursor(0, 90);
+    M5.Lcd.println("Insert a valid SD Card");
+    writeFile(SD, "/bowser.txt", "");
+    delay(500);
+    esp_restart();
+
+  }
+
   // ANDGO: Run Tetris for decoy :P
-  decoySetup();
+  // decoySetup();
+
+  M5.Lcd.fillScreen(BLACK);
 
   // ANDGO: Read file key.txt from SPIFFS (SPI Flash File System) 
   if (!SPIFFS.begin(true))
@@ -67,31 +83,27 @@ void setup(void)
     loopToReset();
   }
 
-  // ANDGO: Check if SD card is inserted and has coomand
-  sdChecker();
-  if (sdAvailable)
+  // ANDGO: Check if SD card has a coomand
+  if (sdCommand == "HARD RESET")
   {
-    Serial.println(sdCommand);
-    if (sdCommand == "HARD RESET")
-    {
-      M5.Lcd.fillScreen(BLACK);
-      M5.Lcd.setCursor(0, 20);
-      M5.Lcd.setTextSize(3);
-      M5.Lcd.setTextColor(RED);
-      M5.Lcd.println("");
-      M5.Lcd.setCursor(0, 90);
-      M5.Lcd.println("    PROCESSING");
-      delay(1000);
-      wipeDevice();
-      loopToReset();
-    }
-    else if (sdCommand.substring(0, 7) == "RESTORE")
-    {
-      wipeSpiffs();
-      restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
-      pinMaker();
-      loopToReset();
-    }
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(0, 20);
+    M5.Lcd.setTextSize(3);
+    M5.Lcd.setTextColor(RED);
+    M5.Lcd.println("");
+    M5.Lcd.setCursor(0, 90);
+    M5.Lcd.println("    PROCESSING");
+    delay(1000);
+    wipeDevice();
+    loopToReset();
+  }
+
+  if (sdCommand.substring(0, 7) == "RESTORE")
+  {
+    wipeSpiffs();
+    restoreFromSeed(sdCommand.substring(8, sdCommand.length()));
+    pinMaker();
+    loopToReset();
   }
 
   enterPin(false);
@@ -231,14 +243,15 @@ void displayAddress()
   if (sdAvailable)
   {
     writeFile(SD, "/bowser.txt", freshPub.c_str());
-    M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println(" Saved to SD, C for menu");
+    M5.Lcd.println("");
+    M5.Lcd.println("");
+    M5.Lcd.println("");
+    M5.Lcd.println("                saved to");
+    M5.Lcd.println("                sd card");
   }
-  else
-  {
-    M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println(" No SD, C for menu");
-  }
+  M5.Lcd.setTextColor(GREEN);
+  M5.Lcd.setCursor(0, 220);
+  M5.Lcd.println("                   to menu");
 
   while (buttonC == false)
   {
@@ -292,8 +305,9 @@ void signPSBT()
     M5.Lcd.print("Fee: ");
     M5.Lcd.print(int(tx.fee()));
     M5.Lcd.println(" sat");
+    M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("A to sign, C to cancel");
+    M5.Lcd.println(" sign               cancel");
     while (buttonA == false && buttonC == false)
     {
       if (M5.BtnA.wasReleased())
@@ -329,8 +343,10 @@ void signPSBT()
     M5.Lcd.println("    Saved to SD");
     M5.Lcd.println("");
     M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("    Press C for menu");
+    M5.Lcd.println("                   to menu");
+
     while (buttonC == false)
     {
       if (M5.BtnC.wasReleased())
@@ -349,10 +365,10 @@ void signPSBT()
     M5.Lcd.setTextSize(2);
     M5.Lcd.setTextColor(RED);
     M5.Lcd.println("    No SD Available");
-    M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("    Press C for menu");
+    M5.Lcd.println("                   to menu");
   }
   else
   {
@@ -364,7 +380,7 @@ void signPSBT()
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("    Press C for menu");
+    M5.Lcd.println("                   to menu");
     while (buttonC == false)
     {
       if (M5.BtnC.wasReleased())
@@ -400,9 +416,10 @@ void exportMaster()
       M5.Lcd.println("              " + pubKey.substring(i, i + 12));
       i = i + 12;
     }
+    M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println(" Saved to SD, C for menu");
+    M5.Lcd.println("                   to menu");
     while (buttonC == false)
     {
       if (M5.BtnC.wasReleased())
@@ -424,7 +441,7 @@ void exportMaster()
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("    Press C for menu");
+    M5.Lcd.println("                   to menu");
   }
 }
 
@@ -444,7 +461,7 @@ void showSeed()
   M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 220);
-  M5.Lcd.println("     Press C for menu");
+  M5.Lcd.println("                   to menu");
   while (buttonC == false)
   {
     if (M5.BtnC.wasReleased())
@@ -470,9 +487,12 @@ void wipeDevice()
   M5.Lcd.setTextSize(2);
   M5.Lcd.println("Device will be reset,");
   M5.Lcd.println("are you sure?");
+  M5.Lcd.println("");
+  M5.Lcd.println("Insert SD card");
+  M5.Lcd.println("   and press continue");
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 220);
-  M5.Lcd.println("A to continue, C to cancel");
+  M5.Lcd.println("continue            cancel");
 
   while (buttonA == false && buttonC == false)
   {
@@ -778,7 +798,7 @@ void restoreFromSeed(String theSeed)
   M5.Lcd.println("are you sure?");
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 220);
-  M5.Lcd.println("A to continue, C to cancel");
+  M5.Lcd.println("continue            cancel");
 
   while (buttonA == false && buttonC == false)
   {
@@ -832,7 +852,17 @@ void wipeSpiffs()
 
 void sdChecker()
 {
-  readFile(SD, "/bowser.txt");
+  File file = SD.open("/bowser.txt");
+  if (!file)
+  {
+    sdAvailable = false;
+    return;
+  }
+  sdAvailable = true;
+  while (file.available())
+  {
+    sdCommand = file.readStringUntil('\n');
+  }
 }
 
 //========================================================================
@@ -877,20 +907,7 @@ void getKeys(String mnemonic, String password)
 
 //========================================================================
 
-void readFile(fs::FS &fs, const char *path)
-{
-  File file = fs.open(path);
-  if (!file)
-  {
-    sdAvailable = false;
-    return;
-  }
-  sdAvailable = true;
-  while (file.available())
-  {
-    sdCommand = file.readStringUntil('\n');
-  }
-}
+
 
 //========================================================================
 
@@ -900,16 +917,9 @@ void writeFile(fs::FS &fs, const char *path, const char *message)
   File file = fs.open(path, FILE_WRITE);
   if (!file)
   {
-    M5.Lcd.println("   Failed to open file for writing");
     return;
   }
-  if (file.print(message))
-  {
-  }
-  else
-  {
-    M5.Lcd.println("   Write failed");
-  }
+  file.print(message);
 }
 
 //========================================================================
