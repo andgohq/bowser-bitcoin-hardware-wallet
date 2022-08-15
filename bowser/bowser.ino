@@ -11,14 +11,9 @@
 #include "SPIFFS.h"
 #include "PSBT.h"
 
-bool buttonA = false;
-bool buttonB = false;
-bool buttonC = false;
-bool confirm = false;
 bool loopMenu = true;
 bool sdAvailable = false;
 
-unsigned long timy;
 int menuItem = 1;
 String passKey;
 String morseLetter;
@@ -56,7 +51,7 @@ void setup(void)
     M5.Lcd.setCursor(0, 90);
     M5.Lcd.println("Insert a valid SD Card");
     writeFile(SD, "/bowser.txt", "");
-    delay(500);
+    delay(1000);
     esp_restart();
 
   }
@@ -167,29 +162,28 @@ void loop()
     M5.Lcd.setCursor(0, 220);
     M5.Lcd.println("    up      down    select");
 
-    while (buttonA == false)
+    while (1)
     {
+      M5.update();
       if (M5.BtnA.wasReleased())
       {
         menuItem--;
-        buttonA = true;
         shortVibration();
+        break;
       }
       else if (M5.BtnB.wasReleased())
       {
         menuItem++;
-        buttonA = true;
         shortVibration();
+        break;
       }
       else if (M5.BtnC.wasReleased())
       {
         loopMenu = false;
-        buttonA = true;
         longVibration();
+        break;
       }
-      M5.update();
     }
-    buttonA = false;
     if (menuItem < 1)
     {
       menuItem = 4;
@@ -251,27 +245,29 @@ void displayAddress()
   sdChecker();
   if (sdAvailable)
   {
-    writeFile(SD, "/bowser.txt", freshPub.c_str());
-    M5.Lcd.println("");
-    M5.Lcd.println("");
-    M5.Lcd.println("");
-    M5.Lcd.println("                saved to");
-    M5.Lcd.println("                sd card");
   }
   M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setCursor(0, 220);
-  M5.Lcd.println("                   go back");
+  M5.Lcd.println(" save              go back");
 
-  while (buttonC == false)
+  while (1)
   {
+    M5.update();
+    if (M5.BtnA.wasReleased())
+    {
+      writeFile(SD, "/bowser.txt", freshPub.c_str());
+      M5.Lcd.setCursor(0, 160);
+      M5.Lcd.println("                saved to");
+      M5.Lcd.println("                sd card");
+      longVibration();
+      return;
+    }
     if (M5.BtnC.wasReleased())
     {
-      buttonC = true;
       shortVibration();
+      return;
     }
-    M5.update();
   }
-  buttonC = false;
 }
 
 //========================================================================
@@ -299,12 +295,7 @@ void signPSBT()
     M5.Lcd.setTextSize(2);
 
     tx.parseBase64(eltx);
-    // int len_parsed = tx.parse(eltx);
-    // if (len_parsed == 0)
-    // {
-    //   M5.Lcd.println("Can't parse tx");
-    //   return;
-    // }
+
     for (int i = 0; i < tx.tx.outputsNumber; i++)
     {
       M5.Lcd.print(tx.tx.txOuts[i].address());
@@ -319,26 +310,20 @@ void signPSBT()
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setCursor(0, 220);
     M5.Lcd.println(" sign               cancel");
-    while (buttonA == false && buttonC == false)
+    while (1)
     {
+      M5.update();
       if (M5.BtnA.wasReleased())
       {
-        buttonA = true;
         longVibration();
+        break;
       }
       if (M5.BtnC.wasReleased())
       {
-        buttonC = true;
         shortVibration();
+        return;
       }
-      M5.update();
     }
-    if (buttonC == true)
-    {
-      buttonC = false;
-      return;
-    }
-    buttonA = false;
     HDPrivateKey hd(savedSeed, passKey);
     tx.sign(hd);
     M5.Lcd.fillScreen(BLACK);
@@ -359,26 +344,16 @@ void signPSBT()
     M5.Lcd.setCursor(0, 220);
     M5.Lcd.println("                   go back");
 
-    while (buttonC == false)
+    while (1)
     {
+      M5.update();
       if (M5.BtnC.wasReleased())
       {
-        buttonC = true;
         shortVibration();
+        return;
       }
-      M5.update();
     }
-    buttonC = false;
     sdCommand = "";
-  }
-  else if (sdAvailable)
-  {
-    M5.Lcd.fillScreen(BLACK);
-    M5.Lcd.setCursor(0, 100);
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setTextColor(RED);
-    M5.Lcd.println("    No SD Available");
-    delay(3000);
   }
   else
   {
@@ -391,16 +366,15 @@ void signPSBT()
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
     M5.Lcd.println("                   go back");
-    while (buttonC == false)
+    while (1)
     {
+      M5.update();
       if (M5.BtnC.wasReleased())
       {
-        buttonC = true;
         shortVibration();
+        return;
       }
-      M5.update();
     }
-    buttonC = false;
   }
 }
 
@@ -414,7 +388,6 @@ void exportMaster()
     int str_len = pubKey.length() + 1;
     char char_array[str_len];
     pubKey.toCharArray(char_array, str_len);
-    writeFile(SD, "/bowser.txt", char_array);
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setCursor(0, 20);
     M5.Lcd.setTextSize(3);
@@ -430,17 +403,25 @@ void exportMaster()
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
-    M5.Lcd.println("                   go back");
-    while (buttonC == false)
+    M5.Lcd.println(" save              go back");
+    while (1)
     {
+      M5.update();
+      if (M5.BtnA.wasReleased())
+      {
+        writeFile(SD, "/bowser.txt", char_array);
+        M5.Lcd.setCursor(0, 200);
+        M5.Lcd.println("                   saved ");
+
+        longVibration();
+        break;
+      }
       if (M5.BtnC.wasReleased())
       {
-        buttonC = true;
         shortVibration();
+        return;
       }
-      M5.update();
     }
-    buttonC = false;
     sdCommand = "";
   }
   else
@@ -471,20 +452,18 @@ void showSeed()
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 220);
   M5.Lcd.println("                   go back");
-  while (buttonC == false)
+  while (1)
   {
+    M5.update();
     if (M5.BtnC.wasReleased())
     {
-      buttonC = true;
       shortVibration();
+      break;
     }
-    M5.update();
   }
-  buttonC = false;
 }
 
 //========================================================================
-
 void wipeDevice()
 {
   M5.Lcd.fillScreen(BLACK);
@@ -505,66 +484,21 @@ void wipeDevice()
   M5.Lcd.setCursor(0, 220);
   M5.Lcd.println("continue            cancel");
 
-  while (buttonA == false && buttonC == false)
+  while (1)
   {
+    M5.update();
     if (M5.BtnA.wasReleased())
     {
-      buttonA = true;
       longVibration();
+      wipeSpiffs();
+      seedMaker();
+      break;
     }
     if (M5.BtnC.wasReleased())
     {
-      buttonC = true;
       shortVibration();
+      loopToReset();
     }
-    M5.update();
-  }
-  if (buttonA == true)
-  {
-    wipeSpiffs();
-    seedMaker();
-  } else {
-    loopToReset();
-  }
-
-  buttonA = false;
-  buttonC = false;
-}
-
-//========================================================================
-
-void seedChecker()
-{
-  File otherFile = SPIFFS.open("/key.txt");
-  savedSeed = otherFile.readStringUntil('\n');
-  otherFile.close();
-  int seedCount = 0;
-
-  for (int x = 0; x < 24; x++)
-  {
-    for (int z = 0; z < 2048; z++)
-    {
-      if (getValue(savedSeed, ' ', x) == seedWords[z])
-      {
-        seedCount = seedCount + 1;
-      }
-    }
-  }
-
-  if (int(seedCount) != 24)
-  {
-    M5.Lcd.fillScreen(BLACK);
-    M5.Lcd.setCursor(0, 90);
-    M5.Lcd.setTextColor(RED);
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.println("   Error: Reset device");
-    M5.Lcd.println("   or restore from seed");
-    M5.Lcd.println("   (See documentation)");
-    while(1);
-  }
-  else
-  {
-    return;
   }
 }
 
@@ -578,7 +512,6 @@ void seedMaker()
   M5.Lcd.println("   Write seed words");
   M5.Lcd.println("   somewhere safe!");
   waitOK();
-  buttonA = false;
 
   byte arr[32];
   for (int i = 0; i < sizeof(arr); i++)
@@ -602,16 +535,15 @@ void seedMaker()
     M5.Lcd.setCursor(0, 220);
     M5.Lcd.println("  next                  ");
 
-    while (buttonA == false)
+    while (1)
     {
+      M5.update();
       if (M5.BtnA.wasReleased())
       {
-        buttonA = true;
         shortVibration();
+        break;
       }
-      M5.update();
     }
-    buttonA = false;
   }
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setCursor(0, 100);
@@ -635,37 +567,24 @@ void seedMaker()
     M5.Lcd.println("  next                  ");
 
 
-    while (buttonA == false)
+    while (1)
     {
+      M5.update();
       if (M5.BtnA.wasReleased())
       {
-        buttonA = true;
         shortVibration();
+        break;
       }
-      M5.update();
     }
-    buttonA = false;
   }
-  // M5.Lcd.fillScreen(BLACK);
-  // M5.Lcd.setCursor(0, 100);
-  // M5.Lcd.println("   Words will also");
-  // M5.Lcd.println("   be saved to SD");
 
   File file = SPIFFS.open("/key.txt", FILE_WRITE);
   file.print(seedGenerateStr.substring(0, seedGenerateStr.length()) + "\n");
   file.close();
 
-  // ANDGO: The generated seed is not saved SD card for safety reason.
-  // String seedGen = "Keep you seed phrase safe but dont lose them! \n" + seedGenerateStr + "\n To learn more about seed phrases visit https://en.bitcoin.it/wiki/Seed_phrase";
-  // int str_len = seedGen.length() + 1;
-  // char char_array[str_len];
-  // seedGen.toCharArray(char_array, str_len);
-
   File otherFile = SPIFFS.open("/key.txt");
   savedSeed = otherFile.readStringUntil('\n');
   otherFile.close();
-
-  // writeFile(SD, "/bowser.txt", char_array);
 }
 
 //========================================================================
@@ -700,19 +619,23 @@ void enterPin(bool set)
   M5.Lcd.println("");
   M5.Lcd.println("    o      ----    submit");
 
-  confirm = false;
+  bool confirm = false;
+  bool button = false;
+  unsigned long timy = -1;
+
   while (confirm == false)
   {
+    M5.update();
     if (M5.BtnA.wasReleased())
     {
-      buttonA = true;
+      button = true;
       shortVibration();
       morseLetter = morseLetter + "1";
       timy = millis();
     }
     if (M5.BtnB.wasReleased())
     {
-      buttonB = true;
+      button = true;
       longVibration();
       morseLetter = morseLetter + "0";
       timy = millis();
@@ -758,10 +681,9 @@ void enterPin(bool set)
         delay(3000);
       }
     }
-    M5.update();
     if ((millis() - timy) > 2000)
     {
-      if (buttonA == true || buttonB == true)
+      if (button == true)
       {
         for (int z = 0; z < 36; z++)
         {
@@ -790,13 +712,11 @@ void enterPin(bool set)
             M5.Lcd.println("    o      ----    submit");
           }
         }
-        buttonA = false;
-        buttonB = false;
+        button = false;
         morseLetter = "";
       }
     }
   }
-  confirm = false;
 }
 
 //========================================================================
@@ -819,40 +739,31 @@ void restoreFromSeed(String theSeed)
   M5.Lcd.setCursor(0, 220);
   M5.Lcd.println("continue            cancel");
 
-  while (buttonA == false && buttonC == false)
+  while (1)
   {
+    M5.update();
     if (M5.BtnA.wasReleased())
     {
-      buttonA = true;
+      M5.Lcd.fillScreen(BLACK);
+      M5.Lcd.setCursor(0, 100);
+      M5.Lcd.setTextColor(GREEN);
+      M5.Lcd.setTextSize(2);
+      M5.Lcd.println("     Saving seed...");
+      delay(2000);
+      File file = SPIFFS.open("/key.txt", FILE_WRITE);
+      file.print(theSeed + "\n");
+      file.close();
+      File otherFile = SPIFFS.open("/key.txt");
+      savedSeed = otherFile.readStringUntil('\n');
+      otherFile.close();
       longVibration();
     }
     if (M5.BtnC.wasReleased())
     {
-      buttonC = true;
       shortVibration();
+      loopToReset();
     }
-    M5.update();
   }
-  if (buttonA == true)
-  {
-    M5.Lcd.fillScreen(BLACK);
-    M5.Lcd.setCursor(0, 100);
-    M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.println("     Saving seed...");
-    delay(2000);
-    File file = SPIFFS.open("/key.txt", FILE_WRITE);
-    file.print(theSeed + "\n");
-    file.close();
-    File otherFile = SPIFFS.open("/key.txt");
-    savedSeed = otherFile.readStringUntil('\n');
-    otherFile.close();
-  } else {
-    loopToReset();
-  }
-
-  buttonA = false;
-  buttonC = false;
 }
 
 //========================================================================
@@ -977,16 +888,15 @@ void waitOK()
   M5.Lcd.setCursor(0, 220);
   M5.Lcd.println("                      OK  ");
 
-  while (buttonC == false)
+  while (1)
   {
+    M5.update();
     if (M5.BtnC.wasReleased())
     {
-      buttonC = true;
       longVibration();
+      break;
     }
-    M5.update();
   }
-  buttonC = false;
 
   delay(100);
 }
