@@ -11,24 +11,16 @@
 #include "SPIFFS.h"
 #include "PSBT.h"
 
-bool loopMenu = true;
 bool sdAvailable = false;
 
-int menuItem = 1;
 String passKey;
-String morseLetter;
-String passHide;
-String seedGenerateStr;
 String savedSeed;
 String seedGenerateArr[24];
 String sdCommand;
-String hashed;
-String savedPinHash;
 String privateKey;
 String pubKey;
 
 AXP192 power;
-
 
 char ref[2][36][7] = {
     {"10", "0111", "0101", "011", "1", "1101", "001", "1111", "11", "1000", "010", "1011", "00", "01", "000", "1001", "0010", "101", "111", "0", "110", "1110", "100", "0110", "0100", "0011", "10000", "11000", "11100", "11110", "11111", "01111", "00111", "00011", "00001", "00000"},
@@ -111,7 +103,7 @@ void setup(void)
 void loop()
 {
   M5.update();
-  loopMenu = true;
+  bool loopMenu = true;
   while (loopMenu == true)
   {
     M5.Lcd.fillScreen(BLACK);
@@ -503,6 +495,8 @@ void wipeDevice()
 //========================================================================
 void seedMaker()
 {
+  String seedGenerateStr;
+
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setCursor(0, 100);
   M5.Lcd.setTextColor(GREEN);
@@ -603,9 +597,12 @@ void pinMaker()
 
 void enterPin(bool set)
 {
+  String morseLetter = "";
+  String passHide = "";
+  String hashed;
+  String savedPinHash;
+
   passKey = "";
-  passHide = "";
-  morseLetter = "";
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setCursor(0, 10);
@@ -678,7 +675,7 @@ void enterPin(bool set)
         M5.Lcd.print("   Reset and try again");
         passKey = "";
         passHide = "";
-        delay(3000);
+        loopToReset()
       }
     }
     if ((millis() - timy) > 2000)
@@ -692,9 +689,11 @@ void enterPin(bool set)
             passKey += ref[1][z];
             passHide += "* ";
             M5.Lcd.fillScreen(BLACK);
+            M5.Lcd.setTextColor(GREEN);
             M5.Lcd.setCursor(0, 10);
             M5.Lcd.setTextSize(3);
-            M5.Lcd.print(" Morse Code pin");
+            M5.Lcd.print("   Pass Phrase  ");
+
             M5.Lcd.setCursor(0, 90);
             M5.Lcd.setTextColor(GREEN);
             if (set == true)
@@ -705,9 +704,10 @@ void enterPin(bool set)
             {
               M5.Lcd.print("   " + passHide);
             }
-            M5.Lcd.setCursor(0, 180);
+            M5.Lcd.setCursor(0, 160);
             M5.Lcd.setTextSize(2);
-            M5.Lcd.println(" pause between values");
+            M5.Lcd.println(" Use morse code     ");
+            M5.Lcd.println(" Pause between letters");
             M5.Lcd.println("");
             M5.Lcd.println("    o      ----    submit");
           }
