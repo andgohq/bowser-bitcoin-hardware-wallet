@@ -11,6 +11,7 @@
 #include "SPIFFS.h"
 #include "PSBT.h"
 
+int menuItem = 1;
 bool sdAvailable = false;
 
 String passKey;
@@ -45,11 +46,10 @@ void setup(void)
     writeFile(SD, "/bowser.txt", "");
     delay(1000);
     esp_restart();
-
   }
 
   // ANDGO: Run Tetris for decoy :P
-  // decoySetup();
+  decoySetup();
 
   M5.Lcd.fillScreen(BLACK);
 
@@ -247,11 +247,11 @@ void displayAddress()
     M5.update();
     if (M5.BtnA.wasReleased())
     {
+      longVibration();
       writeFile(SD, "/bowser.txt", freshPub.c_str());
       M5.Lcd.setCursor(0, 160);
       M5.Lcd.println("                saved to");
       M5.Lcd.println("                sd card");
-      longVibration();
     }
     if (M5.BtnC.wasReleased())
     {
@@ -400,11 +400,11 @@ void exportMaster()
       M5.update();
       if (M5.BtnA.wasReleased())
       {
+        longVibration();
         writeFile(SD, "/bowser.txt", char_array);
         M5.Lcd.setCursor(0, 200);
         M5.Lcd.println("                   saved ");
 
-        longVibration();
       }
       if (M5.BtnC.wasReleased())
       {
@@ -744,6 +744,7 @@ void restoreFromSeed(String theSeed)
     M5.update();
     if (M5.BtnA.wasReleased())
     {
+      longVibration();
       M5.Lcd.fillScreen(BLACK);
       M5.Lcd.setCursor(0, 100);
       M5.Lcd.setTextColor(GREEN);
@@ -756,7 +757,6 @@ void restoreFromSeed(String theSeed)
       File otherFile = SPIFFS.open("/key.txt");
       savedSeed = otherFile.readStringUntil('\n');
       otherFile.close();
-      longVibration();
       break;
     }
     if (M5.BtnC.wasReleased())
