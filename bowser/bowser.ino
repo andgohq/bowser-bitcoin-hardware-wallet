@@ -675,7 +675,7 @@ void enterPin(bool set)
         M5.Lcd.print("   Reset and try again");
         passKey = "";
         passHide = "";
-        loopToReset()
+        loopToReset();
       }
     }
     if ((millis() - timy) > 2000)
