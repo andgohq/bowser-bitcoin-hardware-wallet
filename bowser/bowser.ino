@@ -340,12 +340,11 @@ void signPSBT()
     }
     buttonA = false;
     HDPrivateKey hd(savedSeed, passKey);
-    HDPrivateKey account = hd.derive("m/84'/0'/0'/");
-    tx.sign(account);
+    tx.sign(hd);
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setCursor(0, 20);
     M5.Lcd.setTextSize(2);
-    String signedTx = tx;
+    String signedTx = tx.toBase64();
     int str_len = signedTx.length() + 1;
     char char_array[str_len];
     signedTx.toCharArray(char_array, str_len);
