@@ -610,10 +610,12 @@ void enterPin(bool set)
   M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setCursor(0, 10);
   M5.Lcd.setTextSize(3);
-  M5.Lcd.print(" Morse Code pin");
-  M5.Lcd.setCursor(0, 180);
+  M5.Lcd.print("   Pass Phrase  ");
+
+  M5.Lcd.setCursor(0, 160);
   M5.Lcd.setTextSize(2);
-  M5.Lcd.println(" pause between values");
+  M5.Lcd.println(" Use morse code     ");
+  M5.Lcd.println(" Pause between letters");
   M5.Lcd.println("");
   M5.Lcd.println("    o      ----    submit");
 
@@ -754,6 +756,7 @@ void restoreFromSeed(String theSeed)
       File otherFile = SPIFFS.open("/key.txt");
       savedSeed = otherFile.readStringUntil('\n');
       otherFile.close();
+      longVibration();
       break;
     }
     if (M5.BtnC.wasReleased())
