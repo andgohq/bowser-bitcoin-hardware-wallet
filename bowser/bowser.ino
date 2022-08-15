@@ -260,7 +260,6 @@ void displayAddress()
       M5.Lcd.println("                saved to");
       M5.Lcd.println("                sd card");
       longVibration();
-      return;
     }
     if (M5.BtnC.wasReleased())
     {
@@ -414,7 +413,6 @@ void exportMaster()
         M5.Lcd.println("                   saved ");
 
         longVibration();
-        break;
       }
       if (M5.BtnC.wasReleased())
       {
@@ -756,7 +754,7 @@ void restoreFromSeed(String theSeed)
       File otherFile = SPIFFS.open("/key.txt");
       savedSeed = otherFile.readStringUntil('\n');
       otherFile.close();
-      longVibration();
+      break;
     }
     if (M5.BtnC.wasReleased())
     {
