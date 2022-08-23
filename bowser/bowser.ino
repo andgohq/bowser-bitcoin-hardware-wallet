@@ -20,6 +20,7 @@ String seedGenerateArr[24];
 String sdCommand;
 String privateKey;
 String pubKey;
+uint32_t fingerprint;
 
 AXP192 power;
 
@@ -391,6 +392,9 @@ void exportMaster()
       M5.Lcd.println("              " + pubKey.substring(i, i + 12));
       i = i + 12;
     }
+    String fp(fingerprint);
+    M5.Lcd.println("              " + fp);
+
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 220);
@@ -401,9 +405,9 @@ void exportMaster()
       if (M5.BtnA.wasReleased())
       {
         longVibration();
-        writeFile(SD, "/bowser.txt", char_array);
-        M5.Lcd.setCursor(0, 200);
-        M5.Lcd.println("                   saved ");
+        writeFile(SD, "/bowser.txt", (String(char_array)+"\n"+fp).c_str());
+      M5.Lcd.setCursor(0, 220);
+      M5.Lcd.println(" saved             go back");
 
       }
       if (M5.BtnC.wasReleased())
@@ -837,6 +841,10 @@ void getKeys(String mnemonic, String password)
   privateKey = account;
 
   pubKey = account.xpub();
+
+  uint8_t fingerprint_[4];
+  hd.fingerprint(fingerprint_);
+  fingerprint = *(uint32_t *)fingerprint_;
 }
 
 //========================================================================
